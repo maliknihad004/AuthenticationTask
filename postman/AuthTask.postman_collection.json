@@ -1,0 +1,528 @@
+{
+  "info": {
+    "_postman_id": "817f5588-50e0-47d1-888a-dd15f885bd38",
+    "name": "AuthTask",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "59215194",
+    "_collection_link": "https://go.postman.co/collection/59215194-817f5588-50e0-47d1-888a-dd15f885bd38?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Register Normal User",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Registration returns 201\", function () {\r\n    pm.response.to.have.status(201);\r\n});\r\n\r\npm.test(\"User role is assigned\", function () {\r\n    const user = pm.response.json();\r\n    pm.expect(user.role).to.eql(\"User\");\r\n});\r\n\r\npm.test(\"Password is not exposed\", function () {\r\n    const user = pm.response.json();\r\n    pm.expect(user).to.not.have.property(\"password\");\r\n    pm.expect(user).to.not.have.property(\"passwordHash\");\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"fullName\": \"Sara Ahmad\",\r\n  \"email\": \"sara@example.com\",\r\n  \"password\": \"Sara12345!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://127.0.0.1:5020/api/auth/register",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "5020",
+          "path": [
+            "api",
+            "auth",
+            "register"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Login Normal User",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Login returns 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"JWT token is returned\", function () {\r\n    const response = pm.response.json();\r\n\r\n    pm.expect(response.token).to.be.a(\"string\");\r\n    pm.expect(response.token.split(\".\")).to.have.lengthOf(3);\r\n    pm.expect(response.tokenType).to.eql(\"Bearer\");\r\n});\r\n\r\nif (pm.response.code === 200) {\r\n    pm.collectionVariables.set(\"userToken\", pm.response.json().token);\r\n}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"email\": \"sara@example.com\",\r\n  \"password\": \"Sara12345!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://127.0.0.1:5020/api/auth/login",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "5020",
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Profile With Token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Profile returns 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Profile contains correct user information\", function () {\r\n    const profile = pm.response.json();\r\n\r\n    pm.expect(profile.fullName).to.eql(\"Sara Ahmad\");\r\n    pm.expect(profile.email).to.eql(\"sara@example.com\");\r\n    pm.expect(profile.role).to.eql(\"User\");\r\n});\r\n\r\npm.test(\"Profile contains user ID\", function () {\r\n    const profile = pm.response.json();\r\n\r\n    pm.expect(profile.id).to.exist;\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{userToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://127.0.0.1:5020/api/profile",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "5020",
+          "path": [
+            "api",
+            "profile"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Profile Without Token",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": ""
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "User Endpoint With Token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"User endpoint returns 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"User endpoint returns correct message\", function () {\r\n    const response = pm.response.json();\r\n\r\n    pm.expect(response.message).to.eql(\r\n        \"Welcome! You have access to the User endpoint.\"\r\n    );\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{userToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://127.0.0.1:5020/api/user",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "5020",
+          "path": [
+            "api",
+            "user"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "User Accessing Admin Endpoint",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Normal user cannot access Admin endpoint\", function () {\r\n    pm.response.to.have.status(403);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{userToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://127.0.0.1:5020/api/admin",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "5020",
+          "path": [
+            "api",
+            "admin"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Login Admin",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Admin login returns 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Admin JWT is returned\", function () {\r\n    const response = pm.response.json();\r\n\r\n    pm.expect(response.token).to.be.a(\"string\");\r\n    pm.expect(response.token.split(\".\")).to.have.lengthOf(3);\r\n    pm.expect(response.tokenType).to.eql(\"Bearer\");\r\n});\r\n\r\nif (pm.response.code === 200) {\r\n    pm.collectionVariables.set(\"adminToken\", pm.response.json().token);\r\n}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"email\": \"admin@authtask.local\",\r\n  \"password\": \"maliknihadhamdan\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://127.0.0.1:5020/api/auth/login",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "5020",
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Admin Accessing Admin Endpoint",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Admin endpoint returns 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Admin receives correct response\", function () {\r\n    const response = pm.response.json();\r\n\r\n    pm.expect(response.message).to.eql(\r\n        \"Welcome Admin! You have access to the Admin endpoint.\"\r\n    );\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{adminToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://127.0.0.1:5020/api/admin",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "5020",
+          "path": [
+            "api",
+            "admin"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Admin Accessing User Endpoint",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": ""
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Login With Wrong Password",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Invalid credentials return 401\", function () {\r\n    pm.response.to.have.status(401);\r\n});\r\n\r\npm.test(\"Error message is correct\", function () {\r\n    pm.expect(pm.response.text()).to.include(\r\n        \"Invalid email or password.\"\r\n    );\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"email\": \"sara@example.com\",\r\n  \"password\": \"WrongPassword123!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://127.0.0.1:5020/api/auth/login",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "5020",
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Profile With Invalid Token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Invalid JWT returns 401\", function () {\r\n    pm.response.to.have.status(401);\r\n});\r\n\r\npm.test(\"Invalid token is rejected\", function () {\r\n    pm.expect(pm.response.headers.get(\"WWW-Authenticate\"))\r\n        .to.include(\"Bearer\");\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "invalid.jwt.token",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://127.0.0.1:5020/api/profile",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "5020",
+          "path": [
+            "api",
+            "profile"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "User Endpoint Without Token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"User endpoint without token returns 401\", function () {\r\n    pm.response.to.have.status(401);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://127.0.0.1:5020/api/user",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "5020",
+          "path": [
+            "api",
+            "user"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Admin Endpoint Without Token",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": ""
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Duplicate Email Registration",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Duplicate email returns 400\", function () {\r\n    pm.response.to.have.status(400);\r\n});\r\n\r\npm.test(\"Correct error message\", function () {\r\n    pm.expect(pm.response.text()).to.include(\"Email already exists.\");\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"fullName\": \"Sara Ahmad\",\r\n  \"email\": \"sara@example.com\",\r\n  \"password\": \"Sara12345!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://127.0.0.1:5020/api/auth/register",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "5020",
+          "path": [
+            "api",
+            "auth",
+            "register"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "userToken",
+      "value": ""
+    },
+    {
+      "key": "adminToken",
+      "value": ""
+    }
+  ]
+}
